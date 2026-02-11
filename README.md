@@ -28,19 +28,6 @@ The system performs the following tasks:
 - Scikit-learn  
 - SQLite  
 
----
-
-## Project Structure
-NEA Project/
-│
-├── data/              Data storage
-├── database/          Database files
-├── models/            Machine learning models
-├── scripts/           Data processing and retrieval
-├── main.py            Program entry point
-├── README.md
-└── .gitignore
----
 
 ## Installation
 
