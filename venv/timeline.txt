@@ -1,0 +1,24 @@
+Data retrival:
+- test on linking of searching and insetion of data functions 
+
+Data plotting 
+- Make the plotting more dynamic and links correctly with continous data 
+
+Regression 
+- make the regrssion model to for prediction of future price 
+
+
+# link the database and the data retrival 
+# link the plotting to the database and how it is fetched and done 
+# link the stock predictor model 
+# link the volatlity analysis model 
+# link the database with the hashing algorithm 
+# link all the sub programs with the GUI and come up with the GUI algorithm 
+
+Jan 19th fetching the data and having example data for database testing 
+- Ignore current market data get historical data and adding to database 
+Jan 26th Work on the database and the insertion overall 
+Jan 28th fixed the data insertion error 
+Jan 29th fixed the plotting of the graph 
+# work on the analysis and design fix them 
+And work more on the logging of the code 
