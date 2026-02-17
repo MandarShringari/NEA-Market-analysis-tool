@@ -32,6 +32,33 @@ class DataRetrieval:
 
         return results
 
+    def search_portfolio_tickers(self, ticker_query="", user_id=None):
+        """
+        Search tickers that are already added in PORTFOLIO.
+        If user_id is given, only return that user's portfolio tickers.
+        """
+        like_value = f"%{ticker_query.upper()}%"
+
+        if user_id is None:
+            query = """
+            SELECT DISTINCT ticker
+            FROM PORTFOLIO
+            WHERE UPPER(ticker) LIKE ?
+            ORDER BY ticker ASC;
+            """
+            self.cursor.execute(query, (like_value,))
+        else:
+            query = """
+            SELECT DISTINCT ticker
+            FROM PORTFOLIO
+            WHERE userID = ?
+              AND UPPER(ticker) LIKE ?
+            ORDER BY ticker ASC;
+            """
+            self.cursor.execute(query, (user_id, like_value))
+
+        return [row[0] for row in self.cursor.fetchall()]
+
     def create_or_get_user(self, username):
         self.cursor.execute(
             "SELECT userID FROM USER WHERE username = ?;",
@@ -114,9 +141,19 @@ class DataRetrieval:
 
         except sqlite3.IntegrityError as e:
             raise RuntimeError(f"Insert failed due to constraints: {e}")
+        
+
+    def remove_stock(self, portfolioID):
+        # remove the sotck from portfolio and also remove it from stock plotting
+        self.cursor.execute("DELETE FROM PORTFOLIO WHERE portfolioID = ?;", (portfolioID,))
+        self.cursor.execute("DELETE FROM STOCK_PLOTTING WHERE portfolioID = ?;", (portfolioID,))
+        self.connect_db.commit()
+        
 
     def close(self):
         self.connect_db.close()
+
+
         
         
 
@@ -138,6 +175,14 @@ if not results:
 print("\nSearch results:")
 for i, row in enumerate(results):
     print(f"{i}: Ticker={row[1]}, Company={row[2]}")
+
+existing_tickers = q.search_portfolio_tickers(search_term, user_id=user_id)
+print("\nTickers already in your portfolio:")
+if existing_tickers:
+    for ticker in existing_tickers:
+        print(f"- {ticker}")
+else:
+    print("No matching tickers found in your portfolio.")
 
 choice = int(input("Select a stock by number: "))
 selected_ticker = results[choice][1]

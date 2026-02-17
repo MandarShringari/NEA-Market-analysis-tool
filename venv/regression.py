@@ -19,13 +19,21 @@ class Regression:
     def preprocessing (self):
         self.df = pd.read_sql_query(self.query, self.conn, params=(self.portfolio_id,))
         self.conn.close()
+        if self.df.empty:
+            raise ValueError("No stock data found for the selected portfolio.")
+        self.df["DateID"] = pd.to_datetime(self.df["DateID"], errors="coerce")
+        self.df = self.df.dropna(subset=["DateID"]).reset_index(drop=True)
         self.df['Prev_Close'] = self.df['Close'].shift(1)
         self.df = self.df.dropna().reset_index(drop=True)
+        if len(self.df) < 2:
+            raise ValueError("Not enough rows to train the regression model.")
         
     def model_training(self):
         X = self.df[['Prev_Close']].values
         y = self.df['Close'].values
         split_index = int(len(X) * 0.8)
+        if split_index == 0 or split_index >= len(X):
+            raise ValueError("Not enough data to create train/test split.")
         X_train, X_test = X[:split_index], X[split_index:]
         y_train, y_test = y[:split_index], y[split_index:]
 
@@ -54,9 +62,13 @@ class Regression:
         # plot historical data using DateID
         plt.plot(self.df['DateID'], self.df['Close'], label="Historical Closing Price")
 
-        # generate future DateID values assuming sequential days
+        # Generate future dates from the final observed date.
         last_date = self.df['DateID'].iloc[-1]
-        future_dates = list(range(last_date + 1, last_date + 1 + self.future_days))
+        future_dates = pd.date_range(
+            start=last_date + pd.Timedelta(days=1),
+            periods=self.future_days,
+            freq="D"
+        )
 
         plt.plot(
             future_dates,
@@ -65,7 +77,7 @@ class Regression:
             label="Predicted Closing Price (7 Days)"
         )
 
-        plt.xlabel("DateID")
+        plt.xlabel("Date")
         plt.ylabel("Closing Price")
         plt.title("Stock Closing Price Prediction (7 Days Ahead)")
         plt.legend()
